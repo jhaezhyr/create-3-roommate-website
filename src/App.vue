@@ -1,22 +1,22 @@
 <template>
 	<div id="app">
 		<nav class="navbar navbar-expand-md navbar-dark bg-dark">
-			<a class="navbar-brand mx-auto" href="index.html">
+			<router-link class="navbar-brand mx-auto" to="/">
 				<img src="/images/Ru-Me-small.png" width=40px height=40px/>Ru-Me
-			</a>
+			</router-link>
 			<button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".dual-collapse2">
 				<span class="navbar-toggler-icon"></span>
 			</button>
 			<div class="navbar-collapse collapse w-100 order-1 dual-collapse2">
-				<ul class="navbar-nav ml-auto">
+				<ul class="navbar-nav ml-auto" v-if="shared.me!=undefined">
 					<li class="nav-item">
-						<router-link class="nav-link" to="/dashboard">Dashboard</router-link>
+						<router-link class="nav-link" to="/dashboard" disabled>Dashboard</router-link>
 					</li>
 					<li class="nav-item">
 						<router-link class="nav-link" to="/browse">Browse</router-link>
 					</li>
 					<li class="nav-item">
-						<router-link class="nav-link" to="/profile">Profile</router-link>
+						<router-link class="nav-link" to="/profile">{{shared.me.username}}'s Profile</router-link>
 					</li>
 				</ul>
 			</div>
@@ -26,23 +26,14 @@
 </template>
 
 <style>
-#app {
-	font-family: Avenir, Helvetica, Arial, sans-serif;
-	-webkit-font-smoothing: antialiased;
-	-moz-osx-font-smoothing: grayscale;
-	color: #2c3e50;
-}
-
-#nav {
-	padding: 30px;
-}
-
-#nav a {
-	font-weight: bold;
-	color: #2c3e50;
-}
-
-#nav a.router-link-exact-active {
-	color: #42b983;
-}
 </style>
+
+<script>
+export default {
+	computed: {
+		shared() {
+			return this.$root.$data;
+		}
+	}
+}
+</script>

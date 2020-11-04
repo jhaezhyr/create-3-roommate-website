@@ -1,10 +1,12 @@
 <template>
 	<div class="home">
 		<div class="text-page">
+			<button class="button" style="float: right;" @click="logOut">Log out</button>
 			<h2>Profile</h2>
 			<h3>Basics<span> ({{shared.me.persons.length}} person(s))</span></h3>
 			<div class="box-options" v-for="person in shared.me.persons" :key="person.name">
-				<p>Name<input v-model="person.name" placeholder="Gotta name, pardner?"/></p>
+				<button style="float: right;" @click="removePerson(person)" v-show="shared.me.persons.length>1"><span class="button-circle">-</span></button>
+				<p>Name<input v-model="person.name" placeholder="Gotta name, pardner?" v-on:keydown.stop="console.log('keydown')" v-on:keyup.stop="console.log('keyup')" /></p>
 				<p>Gender
 					<select v-model="person.gender">
 						<option> </option>
@@ -12,6 +14,7 @@
 						<option>female</option>
 					</select>
 				</p>
+				<p>Description<textarea class="textarea" v-model="person.description"></textarea></p>
 			</div>
 			<button @click.prevent="addPerson"><span class="button-circle">+</span>Add a person to profile</button>
 
@@ -49,10 +52,10 @@
 				<input type="radio" id="i-want-house" name="house" value="find" v-model="shared.me.search.type"/>
 				<label for="i-want-house">I need a space and a roommate.</label>
 				<div v-if="shared.me.search.type==='post'">
-					<p>Address: <input v-model="shared.me.search.zone.address"/></p>
-					<p>City: <input v-model="shared.me.search.zone.city"/></p>
-					<p>State: <input v-model="shared.me.search.zone.state"/></p>
-					<p>Zip code: <input v-model="shared.me.search.zone.zipCode"/></p>
+					<p>Address: <input v-model="shared.me.search.location.address"/></p>
+					<p>City: <input v-model="shared.me.search.location.city"/></p>
+					<p>State: <input v-model="shared.me.search.location.state"/></p>
+					<p>Zip code: <input v-model="shared.me.search.location.zipCode"/></p>
 					<p>Move-in date: <input v-model="shared.me.search.moveInDate"></p>
 					<p>Move-out date: <input v-model="shared.me.search.moveOutDate"></p>
 					<p>Costs $<input v-model="shared.me.search.payment"> per month.</p>
@@ -63,7 +66,8 @@
 					</select> room.</p>
 				</div>
 				<div v-if="shared.me.search.type==='find'">
-					<p>Zip code: <input v-model="shared.me.search.zone.zipCode"/></p>
+					<p>State: <input v-model="shared.me.search.location.state"/></p>
+					<p>City: <input v-model="shared.me.search.location.city"/></p>
 					<p>Move-in date: <input v-model="shared.me.search.moveInDate"></p>
 					<p>Move-out date: <input v-model="shared.me.search.moveOutDate"></p>
 					<p>I can pay from $<input v-model="shared.me.search.paymentMin"> to $<input v-model="shared.me.search.paymentMax">.</p>
@@ -103,6 +107,10 @@ export default {
 		addPerson() {
 			this.shared.me.persons.push({ name: "", gender: " " });
 		},
+		removePerson(person) {
+			const index = this.shared.me.persons.indexOf(person);
+			this.shared.me.persons.splice(index, 1);
+		},
 		dragItem(topic, srcCategory) {
 			this.drag = {
 				topic,
@@ -119,7 +127,19 @@ export default {
 			const indexItem = this.shared.me.priorities[this.drag.srcCategory].indexOf(this.drag.topic);
 			this.shared.me.priorities[this.drag.srcCategory].splice(indexItem, 1);
 			this.shared.me.priorities[dstCategory] = [this.drag.topic];
+		},
+		logOut() {
+			this.shared.me = undefined;
+			this.$router.push({ path: '/' });
 		}
 	}
 }
 </script>
+
+
+<style>
+textarea {
+	display: inline-block;
+	width: calc(100% - 90px);
+}
+</style>

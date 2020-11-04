@@ -1,14 +1,15 @@
 <template>
 	<div class="home">
 		<div class="text-page option">
-			<div v-for="person in candidate.persons" :key="person.name">
+			<div class="person" v-for="person in candidate.persons" :key="person.name">
 				<div class="horizontal">
 					<p class="aux-info">{{shared.strings.genders[person.gender]}}</p>
 					<h1>{{person.name}}</h1>
 				</div>
 				<p>{{person.description}}</p>
 			</div>
-			<h3>{{comparison.myVerdict.simple}}<p> ({{comparison.myVerdict.matchPercent}}% match)</p></h3>
+			<hr>
+			<h3>{{comparison.myVerdict.simple}}<p class="match"> ({{comparison.myVerdict.matchPercent}}% match)</p></h3>
 			<p>{{comparison.myVerdict.rationale}}</p>
 			<ul class="priorities">
 				<li v-for="pref in comparison.myVerdict.preferences" :key="pref.key">
@@ -17,7 +18,9 @@
 					<p class="priority" v-show="pref.tag!=''">{{pref.tag}}</p>
 				</li>
 			</ul>
-			<h3>{{comparison.hisVerdict.simple}}<p> ({{comparison.hisVerdict.matchPercent}}% match)</p></h3>
+			<hr>
+			<h3><i>Am I a good match?</i></h3>
+			<h4>{{comparison.hisVerdict.simple}}<p class="match"> ({{comparison.hisVerdict.matchPercent}}% match)</p></h4>
 			<p>{{comparison.hisVerdict.rationale}}</p>
 			<ul class="priorities">
 				<li v-for="pref in comparison.hisVerdict.preferences" :key="pref.key">
@@ -27,15 +30,37 @@
 				</li>
 			</ul>
 			<hr>
-			<h3>{{shared.strings.roomSearch[candidate.search.room]}} room - Heritage Halls</h3>
-			<iframe class="map" :src="candidate.search.googleMaps" width="250" height="200" frameborder="0" style="border:0;" allowfullscreen="" aria-hidden="false" tabindex="0"></iframe>
-			<p>{{moment(candidate.search.moveInDate).format("MMM D, YYYY")}} - {{moment(candidate.search.moveOutDate).format("MMM D, YYYY")}}</p>
-			<p>${{candidate.search.payment}} per month</p>
-			<p>{{candidate.search.location.address}}<br/>{{candidate.search.location.city}}, {{candidate.search.location.state}} {{candidate.search.location.zipCode}}</p>
-			<p>{{Object.values(candidate.search.details).join(" ")}}</p>
+			<div v-if="candidate.search.type==='post'">
+				<h3>{{shared.strings.roomSearch[candidate.search.room]}} room</h3>
+				<iframe class="map" :src="candidate.search.googleMaps" width="250" height="200" frameborder="0" style="border:0;" allowfullscreen="" aria-hidden="false" tabindex="0"></iframe>
+				<p>{{moment(candidate.search.moveInDate).format("MMM D, YYYY")}} - {{moment(candidate.search.moveOutDate).format("MMM D, YYYY")}}</p>
+				<p>${{candidate.search.payment}} per month</p>
+				<p>{{candidate.search.location.address}}<br/>{{candidate.search.location.city}}, {{candidate.search.location.state}} {{candidate.search.location.zipCode}}</p>
+				<p>{{Object.values(candidate.search.details).join(" ")}}</p>
+			</div>
+			<div v-if="candidate.search.type==='find'">
+				<h3>{{shared.strings.roomSearch[candidate.search.room]}} room</h3>
+				<p>{{moment(candidate.search.moveInDate).format("MMM D, YYYY")}} - {{moment(candidate.search.moveOutDate).format("MMM D, YYYY")}}</p>
+				<p>${{candidate.search.paymentMin}} - ${{candidate.search.paymentMax}} per month</p>
+				<p>{{candidate.search.location.city}}, {{candidate.search.location.state}}</p>
+			</div>
 		</div>
 	</div>
 </template>
+
+<style scoped>
+.match {
+	display: block;
+	float: right;
+}
+.person {
+	background-color: white;
+	box-shadow: 5px 5px black;
+	border-radius: 10px;
+	margin-bottom: 5px;
+	padding: 0 10px;
+}
+</style>
 
 <script>
 import Rating from "@/components/Rating.vue"
@@ -75,7 +100,7 @@ export default {
 				// Use
 				let maxTable = [3,3,2,1,0]
 				let valueTable =
-					[[[3,2,-1],[1,3,1],[-1,2,3]],
+					[[[3,1,-1],[1,3,1],[-1,1,3]],
 					[[3,2,0],[1,3,1],[0,2,3]],
 					[[2,1,0],[1,2,1],[0,1,2]],
 					[[1,0,0],[0,1,0],[0,0,1]],
@@ -85,6 +110,7 @@ export default {
 			}
 
 			let dealbreaker = false;
+			let dealbreakerTopic = '';
 			let maxScore = 0;
 			let score = 0;
 			let preferences = [];
@@ -97,8 +123,10 @@ export default {
 				);
 				maxScore += thisScore.max;
 				score += thisScore.value;
-				if (score === -1)
+				if (score === -1) {
 					dealbreaker = true;
+					dealbreakerTopic = topic;
+				}
 				preferences.push({
 					max: thisScore.max,
 					value: thisScore.value,
@@ -108,10 +136,36 @@ export default {
 				});
 			}
 
+			let matchPercent = dealbreaker ? 0 : Math.round(score*100 / maxScore);
+			let simpleDescription = "";
+			let rationale = 'Check the scoreboard below.';
+			if (matchPercent == 0)
+				simpleDescription = "No deal!";
+			else if (matchPercent < 20)
+				simpleDescription = "Better stay away";
+			else if (matchPercent < 40)
+				simpleDescription = "Could be better";
+			else if (matchPercent < 60)
+				simpleDescription = "It's doable";
+			else if (matchPercent < 70)
+				simpleDescription = "A shoe worth wearing";
+			else if (matchPercent < 80)
+				simpleDescription = "Keep this in mind";
+			else if (matchPercent < 90)
+				simpleDescription = "You'll like it here";
+			else if (matchPercent < 100)
+				simpleDescription = "This is the place for you";
+			else if (matchPercent === 100)
+				simpleDescription = "A match made in heaven!";
+			
+			if (dealbreaker) {
+				rationale = `His policy on ${dealbreakerTopic} is simply unacceptable for you.`
+			}
+
 			return {
-				simple: "No deal!",
-				matchPercent: dealbreaker ? 0 : Math.round(score*100 / maxScore),
-				rationale: "His policy on pets is simply unacceptable for you.",
+				simple: simpleDescription,
+				matchPercent,
+				rationale,
 				preferences
 			};
 		}

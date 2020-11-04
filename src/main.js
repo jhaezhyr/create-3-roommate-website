@@ -9,7 +9,7 @@ Vue.config.productionTip = false
 let data = {
   profiles: mock.profiles,
   strings: mock.strings,
-  me: mock.profiles[0],
+  me: undefined,
   profileWithUsername(username) {
     let result = this.profiles.find(profile => profile.username == username);
     return result;
@@ -30,6 +30,9 @@ let data = {
   },
   profileOrderedTopics(profile) {
     return profile.priorities.dealbreakers.concat(profile.priorities.preferred).concat(profile.priorities.unimportant) ;
+  },
+  requestsFromUser(username) { // Returns an array of profiles that the given user has requested to room with.
+    return this.profiles.filter(p => p.inbox.find(req => req.sender === username) != undefined);
   }
 };
 
@@ -45,16 +48,8 @@ new Vue({
 /*
 Remaining fixes.
 - Profile page:  inputs only allow one character before deactivating
-- Profile page:  allow you to remove all but the last person from the profile
 - Profile page:  date picker for move-in and move-out
-- Dashboard:  link to /browse, not browse.html
-- Browse:  summary line, description line
 - Browse:  first find matches that are most relevant
-- Browse:  request to room button doesn't work
 - Browse:  animate each incoming candidate
 - Browse:  beautify the buttons; hide the footer, maybe?
-- Browse:  page for if you have exhausted the options
-- Dashboard:  alert for "accept" request
-- All:  fix github link
-- All:  generate more profiles
 */
